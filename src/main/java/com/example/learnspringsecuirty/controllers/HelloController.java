@@ -6,11 +6,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HelloController {
 
-    @GetMapping("/hello")
-    public String sayHello(){
-        return  "hello spring security v19";
-    }
-
-
-
+  @GetMapping("/hello")
+  public String sayHello() {
+    return "hello spring security v19";
+  }
 }
