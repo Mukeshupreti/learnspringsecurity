@@ -3,11 +3,13 @@ package com.example.learnspringsecuirty.controllers;
 
 import java.util.List;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,19 +33,24 @@ public class TodoController {
         return TODOS_LIST;
     }
 
-    @GetMapping("/users/{username}/todos")
-    @PreAuthorize("hasRole('USER') and #username == authentication.name")
-    @PostAuthorize("returnObject.username == 'in28minutes'")
-    @RolesAllowed({"ADMIN", "USER"})
-    @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    public Todo retrieveTodosForSpecificUser(@PathVariable("username") String username) {
-        return TODOS_LIST.get(0);
+    @GetMapping("csrftoken")
+    public CsrfToken csrf(HttpServletRequest request) {
+      return (CsrfToken)  request.getAttribute("_csrf");
+
     }
 
+    @GetMapping("/users/{userName}/todos")
+    public Todo retrieveTodosForSpecificUser(@PathVariable("userName") String username) {
+        return TODOS_LIST.get(0);
+    }
+   //This will fail if csrf filter is enabled (its enabled by default)
+    // in DefaultSecurityFilterChain
     @PostMapping("/users/{username}/todos")
-    public void createTodoForSpecificUser(@PathVariable String username
+    public String createTodoForSpecificUser(@PathVariable String username
             , @RequestBody Todo todo) {
         logger.info("Create {} for {}", todo, username);
+       // TODOS_LIST.add(todo);
+        return "added";
     }
 
 }
