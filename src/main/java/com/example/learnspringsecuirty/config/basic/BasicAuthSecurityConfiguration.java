@@ -6,8 +6,10 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -19,12 +21,20 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-// @Configuration
+@Configuration
+@EnableMethodSecurity(jsr250Enabled = true, securedEnabled = true)
 public class BasicAuthSecurityConfiguration {
 
   @Bean
   SecurityFilterChain basicSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+    http.authorizeHttpRequests(
+            requests ->
+            {
+              requests.requestMatchers("/users").hasRole("USER");
+              requests.requestMatchers("/admin/**").hasRole("ADMIN");
+              requests.anyRequest().authenticated() ;}
+
+    );
     http.sessionManagement(
         session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -98,8 +108,4 @@ public class BasicAuthSecurityConfiguration {
         .build();
   }
 
-  @Bean
-  public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
-    return new NimbusJwtEncoder(jwkSource);
-  }
 }

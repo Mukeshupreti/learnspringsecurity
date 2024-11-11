@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+//@RestController
 public class JwtController {
 
   private JwtEncoder jwtEncoder;
@@ -26,7 +26,6 @@ public class JwtController {
 
   @PostMapping("/Jwttoken")
   public JwtResponse getJWTToken(Authentication authentication) {
-
     return new JwtResponse(createToken(authentication));
   }
 
@@ -43,12 +42,9 @@ public class JwtController {
   }
 
   private String createScope(Authentication authentication) {
-
     return authentication.getAuthorities().stream()
         .map(x -> x.getAuthority())
         .collect(Collectors.joining(" "));
   }
-
   record JwtResponse(String token) {}
-  ;
 }

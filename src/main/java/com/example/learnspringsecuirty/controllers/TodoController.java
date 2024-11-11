@@ -1,9 +1,12 @@
 package com.example.learnspringsecuirty.controllers;
 
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,13 +31,16 @@ public class TodoController {
   }
 
   @GetMapping("/users/{userName}/todos")
+   @PreAuthorize("hasRole('USER') and #username == authentication.name")  // recommended way among
+ //  @RolesAllowed({"ADMIN", "USER"})  // enabled by jsr250Enabled = true in @EnableMethodSecurity(jsr250Enabled = true)
+  // @Secured({"ADMIN", "USER"}) // enabled by securedEnabled = true  @EnableMethodSecurity( securedEnabled = true)
   public Todo retrieveTodosForSpecificUser(@PathVariable("userName") String username) {
     return TODOS_LIST.get(0);
   }
 
   // This will fail if csrf filter is enabled (its enabled by default)
   // in DefaultSecurityFilterChain
-  @PostMapping("/users/{username}/todos")
+  @PostMapping("/admin/{username}/todos")
   public String createTodoForSpecificUser(@PathVariable String username, @RequestBody Todo todo) {
     logger.info("Create {} for {}", todo, username);
     // TODOS_LIST.add(todo);

@@ -31,7 +31,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
+//@Configuration
 public class JwtAuthSecurityConfiguration {
 
   @Bean
@@ -55,6 +55,13 @@ public class JwtAuthSecurityConfiguration {
     return http.build();
   }
 
+  @Bean
+  public DataSource dataSource() {
+    return new EmbeddedDatabaseBuilder()
+            .setType(EmbeddedDatabaseType.H2)
+            .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
+            .build();
+  }
   // implementation 2 : JDBC with h2 to store credential
   @Bean
   public UserDetailsService userDetailService(DataSource dataSource) {
@@ -83,11 +90,8 @@ public class JwtAuthSecurityConfiguration {
     return new BCryptPasswordEncoder();
   }
 
-  @Bean
-  public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
-    return new NimbusJwtEncoder(jwkSource);
-  }
 
+// step 1
   @Bean
   public KeyPair keyPair() {
     KeyPairGenerator keyPairGenerator = null;
@@ -99,7 +103,7 @@ public class JwtAuthSecurityConfiguration {
     keyPairGenerator.initialize(2048);
     return keyPairGenerator.generateKeyPair();
   }
-
+// step 2
   @Bean
   public RSAKey rsaKey(KeyPair keyPair) {
     RSAPublicKey publicKey = (RSAPublicKey) keyPair.getPublic();
@@ -109,13 +113,20 @@ public class JwtAuthSecurityConfiguration {
         .keyID(UUID.randomUUID().toString()) // Optional: assign a unique key ID
         .build();
   }
-
+// step 3
   @Bean
   public JWKSource jwkSource(RSAKey rsaKey) {
     var jwkSet = new JWKSet(rsaKey);
     return ((jwkSelector, securityContext) -> jwkSelector.select(jwkSet));
   }
+/// it will use to encode JWT key
+  @Bean
+  public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
+    return new NimbusJwtEncoder(jwkSource);
+  }
 
+
+  /// it will use to decode JWT key
   @Bean
   public JwtDecoder jwtDecoder(RSAKey rsaKey) {
 
@@ -126,11 +137,5 @@ public class JwtAuthSecurityConfiguration {
     }
   }
 
-  @Bean
-  public DataSource dataSource() {
-    return new EmbeddedDatabaseBuilder()
-        .setType(EmbeddedDatabaseType.H2)
-        .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
-        .build();
-  }
+
 }
