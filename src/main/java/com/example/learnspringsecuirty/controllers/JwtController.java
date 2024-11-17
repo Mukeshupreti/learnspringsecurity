@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 //@RestController
 public class JwtController {
 
+
   private JwtEncoder jwtEncoder;
 
   public JwtController(JwtEncoder jwtEncoder) {
