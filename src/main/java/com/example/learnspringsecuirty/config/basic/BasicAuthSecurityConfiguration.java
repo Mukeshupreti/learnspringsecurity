@@ -19,8 +19,13 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
- @Configuration
+@Configuration
 public class BasicAuthSecurityConfiguration {
 
   @Bean
@@ -34,12 +39,25 @@ public class BasicAuthSecurityConfiguration {
     // http.formLogin(withDefaults()); /// this will show login form. disable it if you want
     // InMemoryUserDetailsManager
     http.httpBasic(withDefaults());
+    http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+  //  http.cors(()=>corsConfigurer());
 
     // enabling frames for h2 console
     http.headers(
         headers -> headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin()));
 
     return http.build();
+  }
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    configuration.addAllowedOrigin("http://localhost:3000"); // Frontend origin
+    configuration.addAllowedMethod("*"); // Allow all HTTP methods
+    configuration.addAllowedHeader("*"); // Allow all headers
+    configuration.setAllowCredentials(true); // Allow cookies if needed
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration); // Apply to all endpoints
+    return source;
   }
 
   // Implementation #1 : InMemoryUserDetailsManager
@@ -98,6 +116,19 @@ public class BasicAuthSecurityConfiguration {
         .addScript(JdbcDaoImpl.DEFAULT_USER_SCHEMA_DDL_LOCATION)
         .build();
   }
+
+//  @Bean
+//  public WebMvcConfigurer corsConfigurer() {
+//    return new WebMvcConfigurer() {
+//      public void addCorsMappings(CorsRegistry registry) {
+//        registry.addMapping("/**")
+//                .allowedMethods("*")
+//                .allowedOrigins("http://localhost:3000");
+//      }
+//    };
+//  }
+
+
 
 
 }
