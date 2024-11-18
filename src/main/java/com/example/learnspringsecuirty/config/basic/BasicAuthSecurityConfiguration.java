@@ -7,8 +7,10 @@ import com.nimbusds.jose.proc.SecurityContext;
 import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -28,37 +30,70 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class BasicAuthSecurityConfiguration {
 
+
+
+
+
+//  @Bean
+//  SecurityFilterChain basicSecurityFilterChain(HttpSecurity http) throws Exception {
+//    http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+//    http.sessionManagement(
+//        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//
+//    // if you disable csrf then you can call post method without csrf token.
+//    http.csrf(csrf -> csrf.disable());
+//    // http.formLogin(withDefaults()); /// this will show login form. disable it if you want
+//    // InMemoryUserDetailsManager
+//    http.httpBasic(withDefaults());
+//    http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
+//  //  http.cors(()=>corsConfigurer());
+//
+//    // enabling frames for h2 console
+//    http.headers(
+//        headers -> headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin()));
+//
+//    return http.build();
+//  }
+
+
+  //Filter chain
+  // authenticate all requests
+  //basic authentication
+  //disabling csrf
+  //stateless rest api
+
   @Bean
-  SecurityFilterChain basicSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
-    http.sessionManagement(
-        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-    // if you disable csrf then you can call post method without csrf token.
-    http.csrf(csrf -> csrf.disable());
-    // http.formLogin(withDefaults()); /// this will show login form. disable it if you want
-    // InMemoryUserDetailsManager
-    http.httpBasic(withDefaults());
-    http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
-  //  http.cors(()=>corsConfigurer());
-
-    // enabling frames for h2 console
-    http.headers(
-        headers -> headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin()));
-
-    return http.build();
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    //1: Response to preflight request doesn't pass access control check
+    //2: basic auth
+    return
+            http
+                    .authorizeHttpRequests(
+                            auth ->
+                                    auth
+                                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                            .anyRequest().authenticated()
+                    )
+                    .httpBasic(Customizer.withDefaults())
+                    .sessionManagement(
+                            session -> session.sessionCreationPolicy
+                                    (SessionCreationPolicy.STATELESS))
+                    // .csrf().disable() Deprecated in SB 3.1.x
+                    .csrf(csrf -> csrf.disable()) // Starting from SB 3.1.x using Lambda DSL
+                    // .csrf(AbstractHttpConfigurer::disable) // Starting from SB 3.1.x using Method Reference
+                    .build();
   }
-  @Bean
-  public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.addAllowedOrigin("http://localhost:3000"); // Frontend origin
-    configuration.addAllowedMethod("*"); // Allow all HTTP methods
-    configuration.addAllowedHeader("*"); // Allow all headers
-    configuration.setAllowCredentials(true); // Allow cookies if needed
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration); // Apply to all endpoints
-    return source;
-  }
+//  @Bean
+//  public CorsConfigurationSource corsConfigurationSource() {
+//    CorsConfiguration configuration = new CorsConfiguration();
+//    configuration.addAllowedOrigin("http://localhost:3000"); // Frontend origin
+//    configuration.addAllowedMethod("*"); // Allow all HTTP methods
+//    configuration.addAllowedHeader("*"); // Allow all headers
+//    configuration.setAllowCredentials(true); // Allow cookies if needed
+//    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//    source.registerCorsConfiguration("/**", configuration); // Apply to all endpoints
+//    return source;
+//  }
 
   // Implementation #1 : InMemoryUserDetailsManager
   // comment spring.security crendials  in application property and disable

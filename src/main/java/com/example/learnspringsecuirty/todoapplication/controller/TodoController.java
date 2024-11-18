@@ -30,6 +30,11 @@ public class TodoController {
     return (CsrfToken) request.getAttribute("_csrf");
   }
 
+  @GetMapping(path = "/basicauth")
+  public String basicAuthCheck() {
+    return "Success";
+  }
+
   @GetMapping("/users/{userName}/todos/{id}")
   public Todo retrieveTodosForSpecificUser(@PathVariable("userName") String username,@PathVariable  Long id) {
     return repository.findById(id).orElse(null);
