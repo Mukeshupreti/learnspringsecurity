@@ -79,6 +79,7 @@ public class BasicAuthSecurityConfiguration {
                             session -> session.sessionCreationPolicy
                                     (SessionCreationPolicy.STATELESS))
                     // .csrf().disable() Deprecated in SB 3.1.x
+    //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                     .csrf(csrf -> csrf.disable()) // Starting from SB 3.1.x using Lambda DSL
                     // .csrf(AbstractHttpConfigurer::disable) // Starting from SB 3.1.x using Method Reference
                     .build();
