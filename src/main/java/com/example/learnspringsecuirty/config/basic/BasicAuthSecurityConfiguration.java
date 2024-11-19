@@ -72,6 +72,7 @@ public class BasicAuthSecurityConfiguration {
                             auth ->
                                     auth
                                             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                            .requestMatchers( "/api/manage/**").permitAll()
                                             .anyRequest().authenticated()
                     )
                     .httpBasic(Customizer.withDefaults())
